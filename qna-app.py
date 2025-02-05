@@ -109,9 +109,18 @@ def get_answer_from_azure(question):
     except Exception as e:
         return f"Error al obtener respuesta: {str(e)}", None, None
 
+# Asegurar que la clave "input" existe en session_state
+if "input" not in st.session_state:
+    st.session_state.input = ""
+
 # Formulario de entrada de preguntas
 with st.form(key="question_form"):
-    user_question = st.text_input("Tu pregunta sobre finanzas:", key="input", placeholder="Escribe tu pregunta aquí...")
+    user_question = st.text_input(
+        "Tu pregunta sobre finanzas:", 
+        value=st.session_state.input,  # Usar session_state como valor inicial
+        key="input", 
+        placeholder="Escribe tu pregunta aquí..."
+    )
     submit_button = st.form_submit_button(label="Enviar")
 
 # Si el usuario ha enviado una pregunta
@@ -125,11 +134,15 @@ if submit_button and user_question:
     # Mostrar la respuesta del bot
     st.session_state.messages.append(f"🤖: {answer}")
     
+    # Limpiar el campo de entrada correctamente
+    st.session_state.pop("input")  # Elimina la clave en lugar de reasignarla
+    st.rerun()  # Forzar actualización de la interfaz
+
     # Mostrar los metadatos de confianza y fuente si están disponibles
-    if confidence is not None:
-        st.session_state.messages.append(f"Confianza: {confidence * 100:.1f}%")
-    if source:
-        st.session_state.messages.append(f"Fuente: {source}")
+    #if confidence is not None:
+    #   st.session_state.messages.append(f"Confianza: {confidence * 100:.1f}%")
+    #if source:
+    #   st.session_state.messages.append(f"Fuente: {source}")
 
 # Mostrar todo el historial de conversación
 with st.container():
